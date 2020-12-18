@@ -1,6 +1,6 @@
 # vaulttest
 
-[![Circle CI](https://circleci.com/gh/scribd/vaulttest.svg?style=shield)](https://circleci.com/gh/scribd/vaulttest)
+[![Circle CI](https://circleci.com/gh/nikogura/vaulttest.svg?style=shield)](https://circleci.com/gh/nikogura/vaulttest)
 
 Library for spinning up test instances of Hashicorp Vault for use in integration tests locally and in CI systems.
 
@@ -20,7 +20,7 @@ The `vaulttest` package will find a free port, spin up vault in dev mode on that
 
 * Hashicorp Vault, installed on your system somewhere in the PATH.  https://www.vaultproject.io/downloads.html
 
-* This library: `go get github.com/scribd/vaulttest`
+* This library: `go get github.com/nikogura/vaulttest`
 
 # Usage
 
