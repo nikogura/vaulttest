@@ -37,6 +37,7 @@ func NewVaultServer(address string) *VaultServer {
 	return &testServer
 }
 
+// VAULT_CONFIG_TEMPLATE A very minimal Vault config.  Not even a true 'template', since all we're doing is interpolating the address into the mix.
 const VAULT_CONFIG_TEMPLATE = `ui = true
 
 listener "tcp" {
@@ -141,7 +142,7 @@ func (t *VaultServer) ServerStart() {
 	}
 
 	log.Printf("Starting Server on %s\n", t.Address)
-	// Vault expects a path to a config file.  This is a quick hack via a subshell to present the text as if it was, in fact, in a file
+	// Vault expects a path to a config file.  This is a quick hack via a subshell to present the text as if it was, in fact, in a file, but in reality it's just a string.  Neat huh?
 	config := fmt.Sprintf(VAULT_CONFIG_TEMPLATE, t.Address)
 	configArg := fmt.Sprintf("-config=<(echo '%s')", config)
 
