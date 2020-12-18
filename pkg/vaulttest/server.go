@@ -81,7 +81,7 @@ func (t *VaultServer) DevServerStart() {
 		log.Fatalf("unable to connect to testserver's stdout: %s", err)
 	}
 
-	err = t.Command.Start()
+	t.Command.Start()
 
 	scanner := bufio.NewScanner(out)
 
@@ -150,12 +150,12 @@ func (t *VaultServer) ServerStart() {
 
 	t.Command.Stderr = os.Stderr
 
-	err = t.Command.Start()
+	t.Command.Start()
 
 	t.Running = true
 }
 
-// ServerShutDown shuts teh server down
+// ServerShutDown shuts the server down
 func (t *VaultServer) ServerShutDown() {
 	if t.Running {
 		t.Command.Process.Kill()
