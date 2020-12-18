@@ -146,9 +146,12 @@ func (t *VaultServer) ServerStart() {
 	config := fmt.Sprintf(VAULT_CONFIG_TEMPLATE, t.Address)
 	configArg := fmt.Sprintf("-config=<(echo '%s')", config)
 
-	t.Command = exec.Command(vault, "server", configArg)
+	command := fmt.Sprintf("%s server %s", vault, configArg)
+
+	t.Command = exec.Command("bash", "-c", command)
 
 	t.Command.Stderr = os.Stderr
+	t.Command.Stdout = os.Stdout
 
 	t.Command.Start()
 

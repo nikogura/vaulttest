@@ -45,10 +45,10 @@ func setUp() {
 
 	testAddress = fmt.Sprintf("127.0.0.1:%d", port)
 
-	testServer = NewVaultServer(testDevAddress)
+	testServer = NewVaultServer(testAddress)
 
 	if !testServer.Running {
-		go testServer.ServerStart()
+		testServer.ServerStart()
 	}
 }
 

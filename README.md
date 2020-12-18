@@ -181,7 +181,7 @@ If the code you're testing is intended to handle initialization and setup of a V
         testServer = NewVaultServer(testDevAddress)
 
         if !testServer.Running {
-            go testServer.ServerStart()
+            testServer.ServerStart()
         }
     }
 
