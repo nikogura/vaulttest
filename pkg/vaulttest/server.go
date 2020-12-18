@@ -39,6 +39,7 @@ func NewVaultServer(address string) *VaultServer {
 
 // VAULT_CONFIG_TEMPLATE A very minimal Vault config.  Not even a true 'template', since all we're doing is interpolating the address into the mix.
 const VAULT_CONFIG_TEMPLATE = `ui = true
+disable_mlock = true
 
 listener "tcp" {
 	address           = "%s"
