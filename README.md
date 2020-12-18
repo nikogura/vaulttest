@@ -16,17 +16,19 @@ What we can do, however, is have this package spin one up- provided the `vault` 
 
 The `vaulttest` package will find a free port, spin up vault in dev mode on that port, allow you to do your tests against it, and shut it down politely once you're done.
 
+You can also spin up a 'real' vault - not just dev mode.  It's still using an in-memory storage system, but you can use this server to test out your vault api code and ensure that everything works.
+
 # Prerequisites
 
 * Hashicorp Vault, installed on your system somewhere in the PATH.  https://www.vaultproject.io/downloads.html
 
 * This library: `go get github.com/nikogura/vaulttest`
 
-# Usage
+# Dev Mode Usage
 
-Include the following in your test code:
+To use a dev mode vault, include the following in your test code:
 
-    var testServer *vaulttest.VaultDevServer
+    var testServer *vaulttest.VaultServer
     var testClient *api.Client
 
     func TestMain(m *testing.M) {
@@ -47,7 +49,7 @@ Include the following in your test code:
 
         testAddress := fmt.Sprintf("127.0.0.1:%d", port)
 
-        testServer = vaulttest.NewVaultDevServer(testAddress)
+        testServer = vaulttest.NewVaultServer(testAddress)
 
         if !testServer.Running {
             testServer.ServerStart()
@@ -127,7 +129,7 @@ Include the following in your test code:
         testServer.ServerShutDown()
     }
     
-    func TestNewNamespace(t *testing.T) {
+    func TestSecret(t *testing.T) {
         path := "dev/foo/bar"
         secret, err := testClient.Logical().Read(path)
         if err != nil {
@@ -142,3 +144,53 @@ Include the following in your test code:
         
         assert.True(t, secret.Data["foo"].(string) == "bar", "Successfully returned secret")
     }
+
+# 'Normal' Mode Usage
+
+If the code you're testing is intended to handle initialization and setup of a Vault server, you can spin up a 'normal' server too.  Of course if you do this, you're on your own for initialization and handling the unseal keys and initial root token.
+
+    var testServer *VaultServer
+    var testAddress string
+
+    func TestMain(m *testing.M) {
+    setUp()
+
+        code := m.Run()
+
+        tearDown()
+
+        os.Exit(code)
+    }
+
+    func setUp() {
+        port, err := freeport.GetFreePort()
+        if err != nil {
+            log.Fatalf("Failed to get a free port on which to run the test vault server: %s", err)
+        }
+
+        testAddress = fmt.Sprintf("127.0.0.1:%d", port)
+
+        testServer = NewVaultServer(testDevAddress)
+
+        if !testServer.Running {
+            go testServer.ServerStart()
+        }
+    }
+
+    func tearDown() {
+        testServer.ServerShutDown()
+    }
+
+
+    func TestVaultServer(t *testing.T) {
+        client := testServer.VaultTestClient()
+
+        secret, err := client.Logical().Read("sys/seal-status")
+        if err != nil {
+            log.Printf("Failed to check seal status: %s", err)
+            t.Fail()
+        }
+
+        assert.True(t, secret != nil, "Failed to check seal status")
+    }
+

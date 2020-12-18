@@ -13,7 +13,8 @@ import (
 	"strings"
 )
 
-type VaultDevServer struct {
+// VaultServer Representation of a Vault Server
+type VaultServer struct {
 	Command       *exec.Cmd
 	Running       bool
 	UnsealKey     string
@@ -23,20 +24,32 @@ type VaultDevServer struct {
 	Address       string
 }
 
-func NewVaultDevServer(address string) *VaultDevServer {
+// NewVaultServer creates a VaultServer struct with either the address provided, or the default address of 127.0.0.1:8200
+func NewVaultServer(address string) *VaultServer {
 	if address == "" {
 		address = "127.0.0.1:8200"
 	}
 
-	testServer := VaultDevServer{
+	testServer := VaultServer{
 		Address: address,
 	}
 
 	return &testServer
 }
 
-func (t *VaultDevServer) ServerStart() {
-	log.Printf("Starting Server on %s", t.Address)
+const VAULT_CONFIG_TEMPLATE = `ui = true
+
+listener "tcp" {
+	address           = "%s"
+	
+	tls_disable       = "true"
+}
+
+storage "inmem" {}
+`
+
+// DevServerStart Starts a 'dev mode' server, and parses it's output to record the Unseal Keys and Root Token in the VaultServer object
+func (t *VaultServer) DevServerStart() {
 	// find the user's vault token file if it exists
 	homeDir, err := homedir.Dir()
 	if err != nil {
@@ -58,7 +71,8 @@ func (t *VaultDevServer) ServerStart() {
 		log.Fatal("'vault' is not installed and available on the path")
 	}
 
-	t.Command = exec.Command(vault, "server", "-dev", "-dev-listen-address", t.Address)
+	log.Printf("Starting Dev Server on %s\n", t.Address)
+	t.Command = exec.Command(vault, "server", "-dev", "-dev-no-store-token", "-dev-listen-address", t.Address)
 
 	t.Command.Stderr = os.Stderr
 	out, err := t.Command.StdoutPipe()
@@ -98,13 +112,50 @@ func (t *VaultDevServer) ServerStart() {
 
 			continue
 		}
-
 	}
 
 	t.Running = true
 }
 
-func (t *VaultDevServer) ServerShutDown() {
+// ServerStart starts the VaultServer in normal mode.  This server is sealed by default.
+func (t *VaultServer) ServerStart() {
+	// find the user's vault token file if it exists
+	homeDir, err := homedir.Dir()
+	if err != nil {
+		log.Fatalf("Unable to determine user's home dir: %s", err)
+	}
+
+	t.UserTokenFile = fmt.Sprintf("%s/.vault-token", homeDir)
+
+	// read it into memory cos the test server is gonna overwrite it
+	if _, err := os.Stat(t.UserTokenFile); !os.IsNotExist(err) {
+		tokenBytes, err := ioutil.ReadFile(t.UserTokenFile)
+		if err == nil {
+			t.UserToken = string(tokenBytes)
+		}
+	}
+
+	vault, err := exec.LookPath("vault")
+	if err != nil {
+		log.Fatal("'vault' is not installed and available on the path")
+	}
+
+	log.Printf("Starting Server on %s\n", t.Address)
+	// Vault expects a path to a config file.  This is a quick hack via a subshell to present the text as if it was, in fact, in a file
+	config := fmt.Sprintf(VAULT_CONFIG_TEMPLATE, t.Address)
+	configArg := fmt.Sprintf("-config=<(echo '%s')", config)
+
+	t.Command = exec.Command(vault, "server", configArg)
+
+	t.Command.Stderr = os.Stderr
+
+	err = t.Command.Start()
+
+	t.Running = true
+}
+
+// ServerShutDown shuts teh server down
+func (t *VaultServer) ServerShutDown() {
 	if t.Running {
 		t.Command.Process.Kill()
 	}
@@ -116,7 +167,7 @@ func (t *VaultDevServer) ServerShutDown() {
 }
 
 // VaultTestClient returns a configured vault client for the test vault server.  By default the client returned has the root token for the test vault instance set.  If you want something else, you will need to reconfigure it.
-func (t *VaultDevServer) VaultTestClient() *api.Client {
+func (t *VaultServer) VaultTestClient() *api.Client {
 	config := api.DefaultConfig()
 
 	err := config.ReadEnvironment()
