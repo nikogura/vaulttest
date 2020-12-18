@@ -5,13 +5,12 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/golang:1.12.9
+      - image: circleci/golang:latest
 
-    environment: GO111MODULE=on
-    working_directory: /go/src/github.com/scribd/vaulttest
+    working_directory: /go/src/github.com/nikogura/vaulttest
     steps:
       - checkout
-      - run: wget https://releases.hashicorp.com/vault/1.2.3/vault_1.2.3_linux_amd64.zip
+      - run: wget https://releases.hashicorp.com/vault/1.6.1/vault_1.6.1_linux_amd64.zip
       - run: unzip vault*.zip
       - run: sudo cp vault /usr/local/bin/vault
       - run: go test -v ./...
