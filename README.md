@@ -1,6 +1,14 @@
 # vaulttest
 
+[![Current Release](https://img.shields.io/github/release/nikogura/vaulttest.svg)](https://img.shields.io/github/release/nikogura/vaulttest.svg)
+
 [![Circle CI](https://circleci.com/gh/nikogura/vaulttest.svg?style=shield)](https://circleci.com/gh/nikogura/vaulttest)
+
+[![Go Report Card](https://goreportcard.com/badge/github.com/nikogura/vaulttest)](https://goreportcard.com/report/github.com/nikogura/vaulttest)
+
+[![Go Doc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](http://godoc.org/github.com/nikogura/vaulttest/pkg/vaulttest)
+
+[![Coverage Status](https://codecov.io/gh/nikogura/vaulttest/branch/master/graph/badge.svg)](https://codecov.io/gh/nikogura/vaulttest)
 
 Library for spinning up test instances of Hashicorp Vault for use in integration tests locally and in CI systems.
 
