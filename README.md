@@ -60,7 +60,7 @@ To use a dev mode vault, include the following in your test code:
         testServer = vaulttest.NewVaultServer(testAddress)
 
         if !testServer.Running {
-            testServer.ServerStart()
+            testServer.DevServerStart()
             client := testServer.VaultTestClient()
 
             // set up some secret engines
